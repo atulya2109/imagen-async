@@ -4,9 +4,12 @@ import boto3
 from botocore.client import Config
 from PIL import Image
 import io
+from datetime import datetime
 from worker.pipelines.canny import run as run_canny
 from worker.pipelines.openpose import run as run_openpose
 from worker.pipelines.depth import run as run_depth
+from api.database import SessionLocal
+from api.models import Job
 
 redis_client = redis.Redis(host="localhost", port=6379, decode_responses=True)
 s3 = boto3.client(
@@ -52,6 +55,7 @@ def process_job(job):
 
     redis_client.set(f"job:{job['job_id']}:result_url", result_url)
     print(f"Job {job['job_id']} complete, result at {result_url}")
+    return result_url
 
 
 def main():
@@ -62,14 +66,33 @@ def main():
             continue
         _, job_data = result  # type: ignore
         job = json.loads(job_data)
+        job_id = job["job_id"]
 
-        redis_client.set(f"job:{job['job_id']}:status", "processing")
+        redis_client.set(f"job:{job_id}:status", "processing")
+        with SessionLocal() as db:
+            job_row = db.get(Job, job_id)
+            if job_row:
+                job_row.status = "processing"
+                db.commit()
 
         try:
-            process_job(job)
-            redis_client.set(f"job:{job['job_id']}:status", "completed")
+            result_url = process_job(job)
+            redis_client.set(f"job:{job_id}:status", "completed")
+            with SessionLocal() as db:
+                job_row = db.get(Job, job_id)
+                if job_row:
+                    job_row.status = "completed"
+                    job_row.result_url = result_url
+                    job_row.completed_at = datetime.utcnow()
+                    db.commit()
         except Exception as e:
-            redis_client.set(f"job:{job['job_id']}:status", "failed")
+            redis_client.set(f"job:{job_id}:status", "failed")
+            with SessionLocal() as db:
+                job_row = db.get(Job, job_id)
+                if job_row:
+                    job_row.status = "failed"
+                    job_row.completed_at = datetime.utcnow()
+                    db.commit()
             print(f"Job failed: {e}")
 
 
