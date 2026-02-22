@@ -4,13 +4,24 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
+    "accelerate>=1.12.0",
     "boto3>=1.42.54",
     "boto3-stubs[s3]>=1.42.54",
+    "controlnet-aux>=0.0.10",
+    "diffusers>=0.36.0",
     "fastapi>=0.129.2",
     "minio>=7.2.20",
     "psycopg2-binary>=2.9.11",
     "python-multipart>=0.0.22",
     "redis>=7.2.0",
     "sqlalchemy>=2.0.46",
+    "torch>=2.10.0",
+    "torchvision>=0.25.0",
+    "transformers>=5.2.0",
     "uvicorn>=0.41.0",
+]
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.408",
 ]
