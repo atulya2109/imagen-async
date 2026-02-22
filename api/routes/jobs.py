@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 import uuid
-from api.queue import push_job, set_status, get_status
+from api.queue import push_job, set_status, get_status, redis_client
 
 router = APIRouter()
 
@@ -34,4 +34,11 @@ def get_job(job_id: str):
     status = get_status(job_id)
     if not status:
         return {"error": "job not found"}
-    return {"job_id": job_id, "status": status}
+    
+    result_url = redis_client.get(f"job:{job_id}:result_url")
+    
+    return {
+        "job_id": job_id,
+        "status": status,
+        "result_url": result_url
+    }
