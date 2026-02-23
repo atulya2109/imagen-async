@@ -1,4 +1,5 @@
 import torch
+from typing import cast
 from PIL import Image
 from diffusers.pipelines.controlnet.pipeline_controlnet import StableDiffusionControlNetPipeline
 from diffusers.models.controlnets.controlnet import ControlNetModel
@@ -18,10 +19,10 @@ pipe = StableDiffusionControlNetPipeline.from_pretrained(
 ).to("cuda")
 
 def run(image: Image.Image, prompt: str) -> Image.Image:
-    depth_image = depth_detector(image)
-    result = pipe(
+    depth_image = cast(Image.Image, depth_detector(image))
+    result: Image.Image = pipe(
         prompt=prompt,
         image=depth_image,
         num_inference_steps=20
-    ).images[0]
+    ).images[0]  # type: ignore[index]
     return result

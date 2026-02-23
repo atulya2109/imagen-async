@@ -1,19 +1,21 @@
-from sqlalchemy import Column, String, DateTime
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import String, DateTime
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from datetime import datetime
 import uuid
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    pass
 
 
 class Job(Base):
     __tablename__ = "jobs"
 
-    job_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    status = Column(String, nullable=False, default="queued")
-    control_mode = Column(String, nullable=False)
-    instruction = Column(String, nullable=True)
-    image_url = Column(String, nullable=True)
-    result_url = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    completed_at = Column(DateTime, nullable=True)
+    job_id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    status: Mapped[str] = mapped_column(String, nullable=False, default="queued")
+    control_mode: Mapped[str] = mapped_column(String, nullable=False)
+    instruction: Mapped[str | None] = mapped_column(String, nullable=True)
+    image_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    result_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
