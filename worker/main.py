@@ -1,3 +1,4 @@
+import os
 import redis
 import json
 import boto3
@@ -11,12 +12,12 @@ from worker.pipelines.depth import run as run_depth
 from api.database import SessionLocal
 from api.models import Job
 
-redis_client = redis.Redis(host="localhost", port=6379, decode_responses=True)
+redis_client = redis.Redis(host=os.getenv("REDIS_HOST", "localhost"), port=6379, decode_responses=True)
 s3 = boto3.client(
     "s3",
-    endpoint_url="http://localhost:9000",
-    aws_access_key_id="minioadmin",
-    aws_secret_access_key="minioadmin",
+    endpoint_url=os.getenv("S3_ENDPOINT", "http://localhost:9000"),
+    aws_access_key_id=os.getenv("S3_ACCESS_KEY", "minioadmin"),
+    aws_secret_access_key=os.getenv("S3_SECRET_KEY", "minioadmin"),
     config=Config(signature_version="s3v4"),
     region_name="us-east-1"
 )

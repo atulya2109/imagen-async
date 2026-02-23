@@ -1,3 +1,4 @@
+import os
 from fastapi import APIRouter, UploadFile, File
 import uuid
 import boto3
@@ -8,9 +9,9 @@ router = APIRouter()
 
 s3_client = boto3.client(
     "s3",
-    endpoint_url="http://localhost:9000",
-    aws_access_key_id="minioadmin",
-    aws_secret_access_key="minioadmin",
+    endpoint_url=os.getenv("S3_ENDPOINT", "http://localhost:9000"),
+    aws_access_key_id=os.getenv("S3_ACCESS_KEY", "minioadmin"),
+    aws_secret_access_key=os.getenv("S3_SECRET_KEY", "minioadmin"),
     config=Config(signature_version="s3v4"),
     region_name="us-east-1",
 )
@@ -27,9 +28,6 @@ def ensure_bucket_exists() -> None:
             s3_client.create_bucket(Bucket=BUCKET)
         else:
             raise
-
-
-ensure_bucket_exists()
 
 
 @router.post("/upload")
